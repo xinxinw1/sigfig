@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Significant Figures</title>
+  <meta charset="UTF-8">
+  <style type="text/css">
+  * {margin: 0; padding: 0; border: 0; font-family: Verdana, sans-serif; background-color: #FFF; overflow: hidden;}
+  body {text-align: left; font-size: 16px; color: #000;}
+  input {border: 1px solid #000;}
+  
+  h1 {font-size: 20px; font-weight: bold; margin: 10px;}
+  
+  #switch {margin: 10px;}
+  
+  .align {display: table; border: 1px solid #000; margin: 10px;}
+  .align div {display: table-row;}
+  .align .first p {padding-top: 10px;}
+  .align .last p {padding-bottom: 10px;}
+  .align p {display: table-cell; padding: 5px 10px 5px 5px; line-height: 16px;}
+  .align p:first-child {padding-left: 10px; padding-right: 5px;}
+  .align .line {height: 1px;}
+  .align .line p {padding: 5px 0;}
+  .align .line p span {display: block; height: 1px; background-color: #000;}
+  </style>
+  <script src="/codes/libjs/tools/2.0/tools.js"></script>
+  <script src="/codes/libjs/prec-math/devel/prec-math.js"></script>
+  <script>
+  var func;
+  function init(){
+    var arr = ["add", "sub", "mult", "div"];
+    for (var i = 0; i < arr.length; i++){
+      $(arr[i]).setAttribute("href", "javascript:void(0);");
+      $(arr[i]).onclick = mkOnclick(arr[i]);
+    }
+    
+    $("a").onkeyup = update;
+    $("b").onkeyup = update;
+    
+    change("add");
+  }
+  
+  function update(){
+    var a = $("a").value; var b = $("b").value;
+    if (a == "" || b == "" || !validp(a) || !validp(b))$("res").value = "";
+    else $("res").value = func(a, b);
+  }
+  
+  function mkOnclick(id){
+    return function (){
+      change(id);
+      update();
+    };
+  }
+  
+  var curr = "add";
+  function change(id){
+    $(curr).setAttribute("href", "javascript:void(0);");
+    $(id).removeAttribute("href");
+    var signs = [["add", "+"], ["sub", "−"], ["mult", "×"], ["div", "÷"]];
+    var signs = {add: "+", sub: "−", mult: "×", div: "÷"};
+    var funcs = {add: add, sub: sub, mult: mult, div: div};
+    $("sign").innerHTML = signs[id];
+    func = funcs[id];
+    curr = id;
+  }
+  
+  function validp(a){
+    return R.validp(a) || R.validp(a+"0"); // so 100. is valid
+  }
+  
+  function sigfig(a){
+    if (R.canon(a) == "0")return 0;
+    if (R.negp(a))a = R.remNeg(a);
+    a = R.trimDecStart(a);
+    
+    if (R.decp(a)){
+      var passdot = false;
+      for (var i = 0; i < a.length; i++){
+        if (a[i] == "."){
+          passdot = true;
+          continue;
+        }
+        if (a[i] != "0")return a.length-i - (passdot?0:1);
+      }
+      return 0;
+    }
+    
+    for (var i = a.length-1; i >= 0; i--){
+      if (a[i] != "0")return i+1;
+    }
+    
+    return 0;
+  }
+  
+  //alert(sigfig("2."))
+  //alert(sigfig("-12"));
+  //alert(sigfig("-12."));
+  //alert(sigfig("00000.000000100"));
+  
+  function rnd(a, fig){
+    a = R.round(a, numdec(a)-(sigfig(a)-fig));
+    if (R.intp(a)){
+      if (sigfig(a+".") > fig)return a;
+      if (sigfig(a+".") == fig && sigfig(a+".") == sigfig(a))return a;
+      a += ".";
+    }
+    for (var i = fig-sigfig(a); i >= 1; i--){
+      a += "0";
+    }
+    return a;
+  }
+  
+  function rnddec(a, dec){
+    a = R.round(a, dec);
+    if (R.intp(a)){
+      if (dec < 0)return a;
+      if (dec == 0 && sigfig(a+".") == sigfig(a))return a;
+      a += ".";
+    }
+    for (var i = dec-numdec(a); i >= 1; i--){
+      a += "0";
+    }
+    return a;
+  }
+  
+  //alert(numdec("-010"));
+  
+  function numdec(a){
+    if (R.decp(a))return R.decLen(a);
+    for (var i = a.length-1; i >= 0; i--){
+      if (a[i] == "-")continue;
+      if (a[i] != "0")return i-(a.length-1);
+    }
+    return 0;
+  }
+  
+  function add(a, b){
+    var m = Math.min(numdec(a), numdec(b));
+    return rnddec(R.add(a, b), m);
+  }
+  
+  function sub(a, b){
+    var m = Math.min(numdec(a), numdec(b));
+    return rnddec(R.sub(a, b), m);
+  }
+  
+  function mult(a, b){
+    var m = Math.min(sigfig(a), sigfig(b));
+    return rnd(R.mult(a, b), m);
+  }
+  
+  function div(a, b){
+    if (R.canon(b) == "0")return "";
+    var m = Math.min(sigfig(a), sigfig(b));
+    return rnd(R.div(a, b), m);
+  }
+  </script>
+</head>
+
+<body onload="init();">
+  <h1>Significant Figures Calculator</h1>
+  <p id="switch">(<a id="add">add</a> | <a id="sub">sub</a> | <a id="mult">mult</a> | <a id="div">div</a>)</p>
+  <div class="align">
+    <div class="first">
+      <p></p>
+      <p><input id="a" type="text" size="40" autocomplete="off"></p>
+    </div>
+    <div>
+      <p id="sign">+</p>
+      <p><input id="b" type="text" size="40" autocomplete="off"></p>
+    </div>
+    <div class="line">
+      <p><span></span></p>
+      <p><span></span></p>
+    </div>
+    <div class="last">
+      <p>=</p>
+      <p><input id="res" type="text" size="40" autocomplete="off"></p>
+    </div>
+  </div>
+</body>
+
+</html>
