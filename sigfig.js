@@ -1,4 +1,4 @@
-/***** Significant Figures 1.2.1 *****/
+/***** Significant Figures 1.2.2 *****/
 
 /* require tools 4.0 - 4.1.5 */
 /* require prec-math 4.0 - 4.2.0 */
