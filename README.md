@@ -2,7 +2,7 @@
 
 This program is an easy to use calculator that follows [significant figure rules](http://www.chemteam.info/SigFigs/SigFigs.html).
 
-Run it at http://xinxinw1.github.io/sigfig/
+Run it at http://musiclifephilosophy.com/codes/sigfig/
 
 ## Development
 
