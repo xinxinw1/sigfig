@@ -1,6 +1,6 @@
 [submodule "lib/tools"]
 	path = lib/tools
-	url = git@github.com:xinxinw1/tools.git
+	url = https://github.com/xinxinw1/tools.git
 [submodule "lib/prec-math"]
 	path = lib/prec-math
-	url = git@github.com:xinxinw1/prec-math.git
+	url = https://github.com/xinxinw1/prec-math.git
